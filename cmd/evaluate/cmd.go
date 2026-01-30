@@ -28,8 +28,8 @@ func Cmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			for i := range m.Checks {
-				check := m.Checks[i]
+			for i := range m.Caveats {
+				check := m.Caveats[i]
 				if check.TypeUrl == "type.googleapis.com/google.api.expr.v1alpha1.CheckedExpr" {
 					var ex expr.CheckedExpr
 					err = proto.Unmarshal(check.Value, &ex)

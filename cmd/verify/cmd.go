@@ -32,8 +32,8 @@ func Cmd() *cobra.Command {
 			fmt.Fprintf(cmd.OutOrStderr(), "want %s\n", hex.EncodeToString(m.Signature))
 			var signature []byte
 			var m2 macaroonsv1.Macaroon
-			m2.Nonce = m.Nonce
-			m2.Checks = nil
+			m2.Id = m.Id
+			m2.Caveats = nil
 			b, err = proto.Marshal(&m2)
 			if err != nil {
 				return err
@@ -41,10 +41,10 @@ func Cmd() *cobra.Command {
 			signature = generate.HMAC(key, b)
 			fmt.Fprintf(cmd.OutOrStderr(), "sig0 %s\n", hex.EncodeToString(signature))
 			key = signature
-			for i := range m.Checks {
+			for i := range m.Caveats {
 				var m2 macaroonsv1.Macaroon
-				m2.Nonce = m.Nonce
-				m2.Checks = m.Checks[0 : i+1]
+				m2.Id = m.Id
+				m2.Caveats = m.Caveats[0 : i+1]
 				b, err := proto.Marshal(&m2)
 				if err != nil {
 					return err

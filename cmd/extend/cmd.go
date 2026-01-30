@@ -47,7 +47,7 @@ func Cmd() *cobra.Command {
 				return err
 			}
 			v, err := anypb.New(checkedExpr)
-			m.Checks = append(m.Checks, v)
+			m.Caveats = append(m.Caveats, v)
 
 			k := m.Signature
 			m.Signature = nil

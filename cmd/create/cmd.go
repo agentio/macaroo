@@ -12,14 +12,14 @@ import (
 
 func Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create NONCE KEY",
-		Short: "Create a macaroon using a nonce and a secret key.",
+		Use:   "create IDENTIFIER KEY",
+		Short: "Create a macaroon using an identifier (nonce) and a secret key.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			nonce := args[0]
+			id := args[0]
 			key := []byte(args[1])
 			m := &macaroonsv1.Macaroon{
-				Nonce: nonce,
+				Id: id,
 			}
 			b, err := proto.Marshal(m)
 			if err != nil {

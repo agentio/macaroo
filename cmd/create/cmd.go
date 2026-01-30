@@ -1,26 +1,38 @@
 package create
 
 import (
+	"encoding/base64"
 	"fmt"
 
+	macaroonsv1 "github.com/agentio/macaroo/genproto/agent.io/macaroons/v1"
 	"github.com/agentio/macaroo/internal/generate"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/proto"
 )
 
 func Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create SECRET",
-		Short: "Create a macaroon using a secret.",
-		Args:  cobra.ExactArgs(1),
+		Use:   "create NONCE KEY",
+		Short: "Create a macaroon using a nonce and a secret key.",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			nonce, err := generate.Nonce()
+			nonce := args[0]
+			key := []byte(args[1])
+			m := &macaroonsv1.Macaroon{
+				Nonce: nonce,
+			}
+			b, err := proto.Marshal(m)
 			if err != nil {
 				return err
 			}
-			key := []byte(args[0])
-			message := []byte(nonce)
-			signature := generate.HMAC(key, message)
-			fmt.Fprintf(cmd.OutOrStdout(), "%s:%s\n", message, signature)
+			signature := generate.HMAC(key, b)
+			m.Signature = signature
+			b, err = proto.Marshal(m)
+			if err != nil {
+				return err
+			}
+			macaroon := base64.RawURLEncoding.EncodeToString(b)
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", macaroon)
 			return nil
 		},
 	}

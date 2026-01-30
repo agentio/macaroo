@@ -1,35 +1,68 @@
 package verify
 
 import (
-	"log"
-	"strings"
+	"bytes"
+	"encoding/base64"
+	"encoding/hex"
+	"fmt"
 
+	macaroonsv1 "github.com/agentio/macaroo/genproto/agent.io/macaroons/v1"
 	"github.com/agentio/macaroo/internal/generate"
 	"github.com/spf13/cobra"
+	"google.golang.org/protobuf/proto"
 )
 
 func Cmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "verify MACAROON SECRET",
-		Short: "Verify a macaroon using the original secret used to create it.",
+		Use:   "verify MACAROON KEY",
+		Short: "Verify a macaroon using the original key used to create it.",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			macaroon := args[0]
-			secret := args[1]
-			parts := strings.Split(macaroon, ":")
-			for i := range parts[:len(parts)-1] {
-				message := strings.Join(parts[0:i+1], ":")
-				signature := generate.HMAC([]byte(secret), []byte(message))
-				log.Printf("hashing %s -> %s", message, signature)
-				secret = signature
+			key := []byte(args[1])
+			b, err := base64.RawURLEncoding.DecodeString(macaroon)
+			if err != nil {
+				return err
 			}
-			if secret == parts[len(parts)-1] {
-				log.Printf("VERIFIED")
+			var m macaroonsv1.Macaroon
+			err = proto.Unmarshal(b, &m)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(cmd.OutOrStderr(), "want %s\n", hex.EncodeToString(m.Signature))
+			var signature []byte
+			var m2 macaroonsv1.Macaroon
+			m2.Nonce = m.Nonce
+			m2.Checks = nil
+			b, err = proto.Marshal(&m2)
+			if err != nil {
+				return err
+			}
+			signature = generate.HMAC(key, b)
+			fmt.Fprintf(cmd.OutOrStderr(), "sig0 %s\n", hex.EncodeToString(signature))
+			key = signature
+			for i := range m.Checks {
+				var m2 macaroonsv1.Macaroon
+				m2.Nonce = m.Nonce
+				m2.Checks = m.Checks[0 : i+1]
+				b, err := proto.Marshal(&m2)
+				if err != nil {
+					return err
+				}
+				signature = generate.HMAC(key, b)
+				fmt.Fprintf(cmd.OutOrStderr(), "sig%d %s\n", i+1, hex.EncodeToString(signature))
+				key = []byte(signature)
+			}
+			if bytes.Equal(signature, m.Signature) {
+				fmt.Fprintf(cmd.OutOrStdout(), "VERIFIED\n")
 			} else {
-				log.Printf("FAILED")
+				fmt.Fprintf(cmd.OutOrStderr(), "%s != %s\n", hex.EncodeToString(signature), hex.EncodeToString(m.Signature))
+				fmt.Fprintf(cmd.OutOrStdout(), "FAILED\n")
 			}
 			return nil
 		},
 	}
 	return cmd
 }
+
+//return hex.EncodeToString(signature)

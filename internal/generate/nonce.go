@@ -17,3 +17,14 @@ func Nonce() (string, error) {
 	nonce := base64.RawURLEncoding.EncodeToString(nonceBytes)
 	return nonce, nil
 }
+
+// NonceBytes creates a new, cryptographically secure, base64-encoded nonce.
+// Nonces should be at least 128 bits of entropy (16 bytes) to be secure.
+func NonceBytes() ([]byte, error) {
+	// 16 bytes is 128 bits of entropy, which is recommended for security.
+	nonceBytes := make([]byte, 16)
+	if _, err := rand.Read(nonceBytes); err != nil {
+		return nil, err
+	}
+	return nonceBytes, nil
+}

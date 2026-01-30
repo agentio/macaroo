@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package io.agent.macaroons.v1;
+
+import "google/protobuf/any.proto";
+
+message Macaroon {
+    string nonce = 1;
+    repeated google.protobuf.Any checks = 2;
+    bytes signature = 3;
+}
+
+option go_package = "agent.io/macaroons/v1;macaroonsv1";

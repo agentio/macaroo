@@ -5,6 +5,7 @@ import (
 
 	"github.com/agentio/macaroo/cmd/create"
 	"github.com/agentio/macaroo/cmd/extend"
+	"github.com/agentio/macaroo/cmd/print"
 	"github.com/agentio/macaroo/cmd/verify"
 	"github.com/spf13/cobra"
 )
@@ -22,6 +23,7 @@ func cmd() *cobra.Command {
 	}
 	cmd.AddCommand(create.Cmd())
 	cmd.AddCommand(extend.Cmd())
+	cmd.AddCommand(print.Cmd())
 	cmd.AddCommand(verify.Cmd())
 	return cmd
 }

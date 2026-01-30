@@ -2,7 +2,7 @@ package print
 
 import (
 	"encoding/base64"
-	"log"
+	"fmt"
 
 	macaroonsv1 "github.com/agentio/macaroo/genproto/agent.io/macaroons/v1"
 	"github.com/spf13/cobra"
@@ -30,7 +30,7 @@ func Cmd() *cobra.Command {
 				Indent:    "  ",
 				Multiline: true,
 			}.Marshal(&m)
-			log.Printf("%s", string(b3))
+			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", string(b3))
 			return nil
 		},
 	}

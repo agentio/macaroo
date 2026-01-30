@@ -2,13 +2,13 @@ package generate
 
 import (
 	"crypto/hmac"
-	"crypto/md5"
+	"crypto/sha256"
 )
 
 // HMAC creates an HMAC signature for a given message and secret key.
 func HMAC(key, message []byte) []byte {
 	// Create a new HMAC hash using the desired hash function and the secret key.
-	h := hmac.New(md5.New, key)
+	h := hmac.New(sha256.New, key)
 
 	// Write the message to the hash.
 	h.Write(message)
